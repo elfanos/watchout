@@ -1,26 +1,131 @@
 use bevy::prelude::*;
-use components::{Health, Player};
+use camera::PlayerCamera;
+use components::{ComponentInteraction, Player, Velocity};
+use materials::Materials;
+use meshes::Meshes;
 use world::*;
 
+mod camera;
 mod components;
 mod materials;
+mod meshes;
 mod world;
 
+// #[derive(Bundle)]
+// struct Test {
+//     #[bundle]
+//     test: PerspectiveCameraBundle,
+// }
+
 fn main() {
-    println!("Hello, world!");
     App::build()
-        .insert_resource(Msaa { samples: 4 })
+        .insert_resource(WindowDescriptor {
+            title: "Test!".to_string(),
+            width: 500.0,
+            height: 500.0,
+            ..Default::default()
+        })
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup.system())
-        .add_startup_system(spawn_player.system())
-        // .add_system(world.system())
-        // .add_system(player_controller.system())
-        // .add_system(get_player_position.system())
+        .add_startup_stage("spawn_game", SystemStage::single(spawn_game.system()))
+        .add_system_set_to_stage(
+            CoreStage::PostUpdate,
+            SystemSet::new().with_system(set_world_position.system()),
+        )
+        .add_system_set(
+            SystemSet::new().with_system(move_player.system().label(ComponentInteraction::MOVING)),
+        )
         .run();
 }
 
-fn world() {
-    println!("hellop");
+// Move the player to a new vector position in the system
+fn move_player(
+    keys: Res<Input<KeyCode>>,
+    time: Res<Time>,
+    mut qr: Query<(&mut Transform, &mut Position, &Velocity), With<Player>>,
+) {
+    for (mut transform, mut position, velocity) in qr.iter_mut() {
+        if keys.pressed(KeyCode::Q) {
+            let newpos = Vec3::new(
+                position.x,
+                position.y + (velocity.speed * time.delta_seconds() * 4.0),
+                position.z,
+            );
+            let some_translation = Transform::from_translation(newpos);
+            println!(" Going y direction up {}", some_translation.translation);
+            position.y = newpos.y;
+            transform.translation = some_translation.translation;
+        } else if keys.pressed(KeyCode::E) {
+            let newpos = Vec3::new(
+                position.x,
+                position.y - (velocity.speed * time.delta_seconds() * 4.0),
+                position.z,
+            );
+            let some_translation = Transform::from_translation(newpos);
+            println!(
+                " Going left y-axis direction down {}",
+                some_translation.translation
+            );
+            position.y = newpos.y;
+            transform.translation = some_translation.translation;
+        } else if keys.pressed(KeyCode::S) {
+            let newpos = Vec3::new(
+                position.x,
+                position.y,
+                position.z + (velocity.speed * time.delta_seconds() * 4.0),
+            );
+            let some_translation = Transform::from_translation(newpos);
+            println!(" Going z direction back{}", some_translation.translation);
+
+            position.z = newpos.z;
+            transform.translation = some_translation.translation;
+        } else if keys.pressed(KeyCode::W) {
+            let newpos = Vec3::new(
+                position.x,
+                position.y,
+                position.z - (velocity.speed * time.delta_seconds() * 4.0),
+            );
+            let some_translation = Transform::from_translation(newpos);
+            println!(
+                " Going z direction backward {}",
+                some_translation.translation
+            );
+            position.z = newpos.z;
+            transform.translation = some_translation.translation;
+        } else if keys.pressed(KeyCode::D) {
+            let newpos = Vec3::new(
+                position.x + (velocity.speed * time.delta_seconds() * 4.0),
+                position.y,
+                position.z,
+            );
+            let some_translation = Transform::from_translation(newpos);
+            println!(" Going x direction right {}", some_translation.translation);
+
+            position.x = newpos.x;
+            transform.translation = some_translation.translation;
+        } else if keys.pressed(KeyCode::A) {
+            let newpos = Vec3::new(
+                position.x - (velocity.speed * time.delta_seconds() * 4.0),
+                position.y,
+                position.z,
+            );
+            let some_translation = Transform::from_translation(newpos);
+            println!(" Going z direction left {}", some_translation.translation);
+            position.x = newpos.x;
+            transform.translation = some_translation.translation;
+        }
+    }
+}
+
+fn set_world_position(
+    mut parents_query: Query<(Entity), With<Player>>,
+    mut transtorm_query: Query<(&Position, &mut Transform)>,
+) {
+    for parent in parents_query.iter_mut() {
+        if let Ok((position, mut transform)) = transtorm_query.get_mut(parent) {
+            transform.translation = Vec3::new(position.x, position.y, position.z);
+        }
+    }
 }
 
 fn setup(
@@ -28,44 +133,17 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // commands.spawn_batch(bundles_iter)
-    // Plane
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
-        material: materials.add(Color::rgb(0.3, 0.5, 0.4).into()),
-        ..Default::default()
+    // commands.spawn_bundle(PbrBundle {
+    //     mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
+    //     material: materials.add(Color::rgb(0.3, 0.5, 0.4).into()),
+    //     ..Default::default()
+    // });
+    commands.insert_resource(Materials {
+        player: materials.add(Color::rgb(0.5, 0.2, 0.5).into()),
+        ground: materials.add(Color::rgb(0.3, 0.5, 0.4).into()),
     });
-
-    // cube
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-        ..Default::default()
+    commands.insert_resource(Meshes {
+        player_mesh: meshes.add(Mesh::from(shape::Cube { size: 0.3 })),
+        ground_mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
     });
-
-    commands.spawn_bundle(LightBundle {
-        light: Light {
-            color: Color::rgb(0.2, 0.3, 0.2),
-            intensity: 1500.0,
-            ..Default::default()
-        },
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..Default::default()
-    });
-
-    commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..Default::default()
-    });
-}
-
-fn player_controller(query: Query<&Health, With<Player>>) {
-    for name in query.iter() {
-        println!("Some cole healthj {}", name.0);
-    }
-}
-fn get_player_position(query: Query<&Position, With<Player>>) {
-    for pos in query.iter() {
-        println!("Some position x = {} y = {}, z = {}", pos.x, pos.y, pos.z);
-    }
 }

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
 pub struct Materials {
-    pub player: ColorMaterial,
+    pub player: Handle<StandardMaterial>,
+    pub ground: Handle<StandardMaterial>,
 }
