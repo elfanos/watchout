@@ -32,59 +32,59 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugin(RapierRenderPlugin)
         .add_startup_system(setup)
-        .add_system(update_world_position_from_physics)
         .add_startup_stage("spawn_game", SystemStage::single(spawn_game))
-        .add_system_set_to_stage(
-            CoreStage::PostUpdate,
-            SystemSet::new().with_system(set_world_position),
-        )
+        // .add_system_set_to_stage(
+        //     CoreStage::PostUpdate,
+        //     SystemSet::new().with_system(set_world_position),
+        // )
         .add_system_set(
             SystemSet::new().with_system(move_player.label(ComponentInteraction::MOVING)),
         )
         .run();
 }
 
-
-fn update_world_position_from_physics(mut positions: Query<(&RigidBodyPositionComponent, &mut Position)>) {
-    for (rb_pos, mut pos) in positions.iter_mut() {
-        pos.y = rb_pos.position.translation.vector.y;
-        println!("Ball altitude: {}", rb_pos.position.translation.vector.y);
-    }
-}
-
 // Move the player to a new vector position in the system
 fn move_player(
     keys: Res<Input<KeyCode>>,
     time: Res<Time>,
-    mut qr: Query<(&mut Position, &Velocity), With<Player>>,
+    mut qr: Query<(&mut RigidBodyVelocityComponent, &Velocity), With<Player>>,
 ) {
-    for (mut position, velocity) in qr.iter_mut() {
+    for (mut rb_vel, velocity) in qr.iter_mut() {
+        // let mut position = rb_pos.position.translation.vector;
+        // rb_pos.position.translation = rb_pos.position.translation + Vec3::new(0.0, 0.0, 0.0);
+    
         if keys.pressed(KeyCode::Q) {
-            position.y = position.y + (velocity.speed * time.delta_seconds() * 4.0);
+            rb_vel.linvel = Vec3::new(0.0, 1.0, 0.0).into();
+            // position.y = position.y + (velocity.speed * time.delta_seconds() * 4.0);
         } else if keys.pressed(KeyCode::E) {
-            position.y = position.y - (velocity.speed * time.delta_seconds() * 4.0);
+            rb_vel.linvel = Vec3::new(0.0, -1.0, 0.0).into();
+            // position.y = position.y - (velocity.speed * time.delta_seconds() * 4.0);
         } else if keys.pressed(KeyCode::S) {
-            position.z = position.z + (velocity.speed * time.delta_seconds() * 4.0);
+            rb_vel.linvel = Vec3::new(0.0, 0.0, 1.0).into();
+            // position.z = position.z + (velocity.speed * time.delta_seconds() * 4.0);
         } else if keys.pressed(KeyCode::W) {
-            position.z = position.z - (velocity.speed * time.delta_seconds() * 4.0);
+            rb_vel.linvel = Vec3::new(0.0, 0.0, -1.0).into();
+            // position.z = position.z - (velocity.speed * time.delta_seconds() * 4.0);
         } else if keys.pressed(KeyCode::D) {
-            position.x = position.x + (velocity.speed * time.delta_seconds() * 4.0);
+            rb_vel.linvel = Vec3::new(1.0, 0.0, 0.0).into();
+            // position.x = position.x + (velocity.speed * time.delta_seconds() * 4.0);
         } else if keys.pressed(KeyCode::A) {
-            position.x = position.x - (velocity.speed * time.delta_seconds() * 4.0);
+            rb_vel.linvel = Vec3::new(-1.0, 0.0, 0.0).into();
+            // position.x = position.x - (velocity.speed * time.delta_seconds() * 4.0);
         }
     }
 }
 
-fn set_world_position(
-    mut parents_query: Query<(Entity), With<Player>>,
-    mut transtorm_query: Query<(&Position, &mut Transform)>,
-) {
-    for parent in parents_query.iter_mut() {
-        if let Ok((position, mut transform)) = transtorm_query.get_mut(parent) {
-            transform.translation = Vec3::new(position.x, position.y, position.z);
-        }
-    }
-}
+// fn set_world_position(
+//     mut parents_query: Query<(Entity), With<Player>>,
+//     mut transtorm_query: Query<(&Position, &mut Transform)>,
+// ) {
+//     for parent in parents_query.iter_mut() {
+//         if let Ok((position, mut transform)) = transtorm_query.get_mut(parent) {
+//             transform.translation = Vec3::new(position.x, position.y, position.z);
+//         }
+//     }
+// }
 
 fn setup(
     mut commands: Commands,

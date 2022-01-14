@@ -46,6 +46,7 @@ pub fn spawn_game(mut commands: Commands, materials: Res<Materials>, meshes: Res
         })
         .insert_bundle(rigid_body)
         .insert_bundle(collider)
+        .insert(RigidBodyPositionSync::Discrete)
         .insert(Position {
             x: 0.,
             y: 0.,
