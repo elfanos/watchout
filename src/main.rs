@@ -1,9 +1,12 @@
+extern crate bevy_rapier3d;
+
 use bevy::prelude::*;
 use camera::PlayerCamera;
 use components::{ComponentInteraction, Player, Velocity};
 use materials::Materials;
 use meshes::Meshes;
 use world::*;
+use bevy_rapier3d::prelude::*;
 
 mod camera;
 mod components;
@@ -18,7 +21,7 @@ mod world;
 // }
 
 fn main() {
-    App::build()
+    App::new()
         .insert_resource(WindowDescriptor {
             title: "Test!".to_string(),
             width: 500.0,
@@ -26,16 +29,27 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
-        .add_startup_system(setup.system())
-        .add_startup_stage("spawn_game", SystemStage::single(spawn_game.system()))
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(RapierRenderPlugin)
+        .add_startup_system(setup)
+        .add_system(update_world_position_from_physics)
+        .add_startup_stage("spawn_game", SystemStage::single(spawn_game))
         .add_system_set_to_stage(
             CoreStage::PostUpdate,
-            SystemSet::new().with_system(set_world_position.system()),
+            SystemSet::new().with_system(set_world_position),
         )
         .add_system_set(
-            SystemSet::new().with_system(move_player.system().label(ComponentInteraction::MOVING)),
+            SystemSet::new().with_system(move_player.label(ComponentInteraction::MOVING)),
         )
         .run();
+}
+
+
+fn update_world_position_from_physics(mut positions: Query<(&RigidBodyPositionComponent, &mut Position)>) {
+    for (rb_pos, mut pos) in positions.iter_mut() {
+        pos.y = rb_pos.position.translation.vector.y;
+        println!("Ball altitude: {}", rb_pos.position.translation.vector.y);
+    }
 }
 
 // Move the player to a new vector position in the system
@@ -143,7 +157,7 @@ fn setup(
         ground: materials.add(Color::rgb(0.3, 0.5, 0.4).into()),
     });
     commands.insert_resource(Meshes {
-        player_mesh: meshes.add(Mesh::from(shape::Cube { size: 0.3 })),
-        ground_mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
+        player_mesh: meshes.add(Mesh::from(bevy::prelude::shape::Cube { size: 0.3 })),
+        ground_mesh: meshes.add(Mesh::from(bevy::prelude::shape::Plane { size: 5.0 })),
     });
 }

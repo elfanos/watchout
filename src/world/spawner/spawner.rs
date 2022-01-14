@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 
 use crate::{
     components::{Health, Movement, Player, Velocity},
@@ -17,6 +18,23 @@ pub fn spawn_game(mut commands: Commands, materials: Res<Materials>, meshes: Res
         })
         .id();
 
+        /* Create the bouncing ball. */
+        let rigid_body = RigidBodyBundle {
+            position: Vec3::new(0.0, 10.0, 0.0).into(),
+            ..Default::default()
+        };
+        let collider = ColliderBundle {
+            shape: ColliderShape::ball(0.5).into(),
+            material: ColliderMaterial {
+                restitution: 0.7,
+                ..Default::default()
+            }.into(),
+            ..Default::default()
+        };
+        // commands.spawn_bundle(rigid_body)
+        //  .insert_bundle(collider).push_children(&[player]);
+
+
     let player = commands
         .spawn_bundle(PbrBundle {
             mesh: meshes.player_mesh.clone(),
@@ -26,6 +44,8 @@ pub fn spawn_game(mut commands: Commands, materials: Res<Materials>, meshes: Res
         .insert(Player {
             direction: Movement::LEFT,
         })
+        .insert_bundle(rigid_body)
+        .insert_bundle(collider)
         .insert(Position {
             x: 0.,
             y: 0.,
@@ -48,21 +68,33 @@ pub fn spawn_game(mut commands: Commands, materials: Res<Materials>, meshes: Res
         })
         .id();
 
+        // let collider = ColliderBundle {
+        //     shape: ColliderShape::cuboid(100.0, 0.1, 100.0).into(),
+        //     ..Default::default()
+        // };
+        // commands.spawn_bundle(collider);
+    
+
+        // };
+    
+    // commands.spawn_bundle(rigid_body)
+    //         .insert_bundle(collider).push_children(&[player]);
+
     commands.entity(player).push_children(&[player_camera]);
     commands.entity(world).push_children(&[player]);
 }
 
-/**
- * Spawn world lights
- */
-pub fn light_bundle() -> LightBundle {
-    LightBundle {
-        light: Light {
-            color: Color::rgb(0.2, 0.3, 0.2),
-            intensity: 1500.0,
-            ..Default::default()
-        },
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..Default::default()
-    }
-}
+// /**
+//  * Spawn world lights
+//  */
+// pub fn light_bundle() -> LightBundle {
+//     LightBundle {
+//         light: Light {
+//             color: Color::rgb(0.2, 0.3, 0.2),
+//             intensity: 1500.0,
+//             ..Default::default()
+//         },
+//         transform: Transform::from_xyz(4.0, 8.0, 4.0),
+//         ..Default::default()
+//     }
+// }
