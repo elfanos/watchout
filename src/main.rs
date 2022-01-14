@@ -47,29 +47,29 @@ fn main() {
 fn move_player(
     keys: Res<Input<KeyCode>>,
     time: Res<Time>,
-    mut qr: Query<(&mut RigidBodyVelocityComponent, &Velocity), With<Player>>,
+    mut qr: Query<(&mut RigidBodyForcesComponent, &Velocity), With<Player>>,
 ) {
-    for (mut rb_vel, velocity) in qr.iter_mut() {
+    for (mut rb_force, velocity) in qr.iter_mut() {
         // let mut position = rb_pos.position.translation.vector;
         // rb_pos.position.translation = rb_pos.position.translation + Vec3::new(0.0, 0.0, 0.0);
     
         if keys.pressed(KeyCode::Q) {
-            rb_vel.linvel = Vec3::new(0.0, 1.0, 0.0).into();
+            rb_force.force = Vec3::new(0.0, 1.0, 0.0).into();
             // position.y = position.y + (velocity.speed * time.delta_seconds() * 4.0);
         } else if keys.pressed(KeyCode::E) {
-            rb_vel.linvel = Vec3::new(0.0, -1.0, 0.0).into();
+            rb_force.force = Vec3::new(0.0, -1.0, 0.0).into();
             // position.y = position.y - (velocity.speed * time.delta_seconds() * 4.0);
         } else if keys.pressed(KeyCode::S) {
-            rb_vel.linvel = Vec3::new(0.0, 0.0, 1.0).into();
+            rb_force.force = Vec3::new(0.0, 0.0, 1.0).into();
             // position.z = position.z + (velocity.speed * time.delta_seconds() * 4.0);
         } else if keys.pressed(KeyCode::W) {
-            rb_vel.linvel = Vec3::new(0.0, 0.0, -1.0).into();
+            rb_force.force = Vec3::new(0.0, 0.0, -1.0).into();
             // position.z = position.z - (velocity.speed * time.delta_seconds() * 4.0);
         } else if keys.pressed(KeyCode::D) {
-            rb_vel.linvel = Vec3::new(1.0, 0.0, 0.0).into();
+            rb_force.force = Vec3::new(1.0, 0.0, 0.0).into();
             // position.x = position.x + (velocity.speed * time.delta_seconds() * 4.0);
         } else if keys.pressed(KeyCode::A) {
-            rb_vel.linvel = Vec3::new(-1.0, 0.0, 0.0).into();
+            rb_force.force = Vec3::new(-1.0, 0.0, 0.0).into();
             // position.x = position.x - (velocity.speed * time.delta_seconds() * 4.0);
         }
     }
