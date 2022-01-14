@@ -56,12 +56,14 @@ pub fn spawn_game(mut commands: Commands, materials: Res<Materials>, meshes: Res
         .insert(Velocity { speed: 1.0 })
         .id();
 
-    let player_camera = commands
+    commands
         .spawn_bundle(PerspectiveCameraBundle {
             transform: Transform::from_xyz(0.0, 1.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..Default::default()
         })
-        .insert(PlayerCamera)
+        .insert(PlayerCamera {
+            player
+        })
         .insert(Position {
             x: -2.0,
             y: 2.5,
@@ -76,6 +78,8 @@ pub fn spawn_game(mut commands: Commands, materials: Res<Materials>, meshes: Res
     };
     commands.spawn_bundle(collider);
 
-    commands.entity(player).push_children(&[player_camera]);
+    // commands.spawn_bundle(player_camera);
+
+    // commands.entity(player).push_children(&[player_camera]);
     commands.entity(world).push_children(&[player]);
 }

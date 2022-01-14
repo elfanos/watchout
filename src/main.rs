@@ -33,6 +33,7 @@ fn main() {
         .add_plugin(RapierRenderPlugin)
         .add_startup_system(setup)
         .add_startup_stage("spawn_game", SystemStage::single(spawn_game))
+        .add_system(update_camera_translation_from_player)
         // .add_system_set_to_stage(
         //     CoreStage::PostUpdate,
         //     SystemSet::new().with_system(set_world_position),
@@ -41,6 +42,19 @@ fn main() {
             SystemSet::new().with_system(move_player.label(ComponentInteraction::MOVING)),
         )
         .run();
+}
+
+fn update_camera_translation_from_player (mut qr: Query<(&mut PlayerCamera, &mut Transform)>, 
+    mut rb_query: Query<&mut RigidBodyPositionComponent>,
+) {
+    
+    for (camera, mut camera_transform) in qr.iter_mut() {
+        let player_position = rb_query.get_mut(camera.player).expect("Could not get player transform");
+        let player_vector = player_position.position.translation;
+        player_vector.x;
+
+        camera_transform.look_at(Vec3::new(player_vector.x, player_vector.y, player_vector.z), Vec3::Y);
+    }
 }
 
 // Move the player to a new vector position in the system
