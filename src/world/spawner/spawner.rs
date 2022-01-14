@@ -68,17 +68,12 @@ pub fn spawn_game(mut commands: Commands, materials: Res<Materials>, meshes: Res
         })
         .id();
 
-        // let collider = ColliderBundle {
-        //     shape: ColliderShape::cuboid(100.0, 0.1, 100.0).into(),
-        //     ..Default::default()
-        // };
-        // commands.spawn_bundle(collider);
-    
-
-        // };
-    
-    // commands.spawn_bundle(rigid_body)
-    //         .insert_bundle(collider).push_children(&[player]);
+    // Builds ground
+    let collider = ColliderBundle {
+        shape: ColliderShape::cuboid(100.0, 0.1, 100.0).into(),
+        ..Default::default()
+    };
+    commands.spawn_bundle(collider);
 
     commands.entity(player).push_children(&[player_camera]);
     commands.entity(world).push_children(&[player]);
