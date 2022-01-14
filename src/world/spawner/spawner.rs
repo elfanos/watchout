@@ -83,18 +83,3 @@ pub fn spawn_game(mut commands: Commands, materials: Res<Materials>, meshes: Res
     commands.entity(player).push_children(&[player_camera]);
     commands.entity(world).push_children(&[player]);
 }
-
-// /**
-//  * Spawn world lights
-//  */
-// pub fn light_bundle() -> LightBundle {
-//     LightBundle {
-//         light: Light {
-//             color: Color::rgb(0.2, 0.3, 0.2),
-//             intensity: 1500.0,
-//             ..Default::default()
-//         },
-//         transform: Transform::from_xyz(4.0, 8.0, 4.0),
-//         ..Default::default()
-//     }
-// }
