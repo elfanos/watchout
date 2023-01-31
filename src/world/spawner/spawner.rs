@@ -18,22 +18,32 @@ pub fn spawn_game(mut commands: Commands, materials: Res<Materials>, meshes: Res
         })
         .id();
 
-        /* Create the bouncing ball. */
-        let rigid_body = RigidBodyBundle {
-            position: Vec3::new(0.0, 10.0, 0.0).into(),
+    /* Create the bouncing ball. */
+    let rigid_body = RigidBodyBundle {
+        position: Vec3::new(0.0, 10.0, 0.0).into(),
+        forces: RigidBodyForces {
+            gravity_scale: 2.9,
             ..Default::default()
-        };
-        let collider = ColliderBundle {
-            shape: ColliderShape::ball(0.5).into(),
-            material: ColliderMaterial {
-                restitution: 0.7,
-                ..Default::default()
-            }.into(),
+        }
+        .into(),
+        damping: RigidBodyDamping {
+            linear_damping: 3.5,
+            angular_damping: 10.3,
+        }
+        .into(),
+        ..Default::default()
+    };
+    let collider = ColliderBundle {
+        shape: ColliderShape::ball(0.5).into(),
+        material: ColliderMaterial {
+            restitution: 0.7,
             ..Default::default()
-        };
-        // commands.spawn_bundle(rigid_body)
-        //  .insert_bundle(collider).push_children(&[player]);
-
+        }
+        .into(),
+        ..Default::default()
+    };
+    // commands.spawn_bundle(rigid_body)
+    //  .insert_bundle(collider).push_children(&[player]);
 
     let player = commands
         .spawn_bundle(PbrBundle {
@@ -61,9 +71,7 @@ pub fn spawn_game(mut commands: Commands, materials: Res<Materials>, meshes: Res
             transform: Transform::from_xyz(0.0, 1.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..Default::default()
         })
-        .insert(PlayerCamera {
-            player
-        })
+        .insert(PlayerCamera { player })
         .insert(Position {
             x: -2.0,
             y: 2.5,
